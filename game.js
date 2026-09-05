@@ -57,7 +57,6 @@ function entangle(k,dt){
   if(k.value>14&&apart>1.2){
     const friction=apart*(k.value/100)*dt*6.4;k.heat=clamp(k.heat+friction,0,100);a.hp-=friction*.72;b.hp-=friction*.72;
     chars.forEach(c=>{if(!c.free&&c!==a&&c!==b)c.hp-=friction*.10;});
-    for(let n=0;n<Math.ceil(friction);n++)fibers.push({x:k.x+rand(-10,10),y:k.y+rand(-8,8),vx:rand(-40,40),vy:rand(-60,10),life:1});
     if(friction>.55){shake=Math.min(9,shake+1);say('ギギギ… 摩擦！',.35);}
   } else k.heat=Math.max(0,k.heat-dt*5);
 }
@@ -130,14 +129,6 @@ function strokeRope(points,c,id){
   points.forEach((p,i)=>{const prev=points[Math.max(0,i-1)],next=points[Math.min(points.length-1,i+1)],ang=Math.atan2(next.y-prev.y,next.x-prev.x),nx=-Math.sin(ang),ny=Math.cos(ang),offset=-baseHalf*Math.cos(phases[i])*.7,x=p.x+nx*offset,y=p.y+ny*offset;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();ctx.globalAlpha=1;
   ctx.restore();
 }
-function drawKnot(k){
-  if(k.value<4)return;const a=chars[k.a],b=chars[k.b];if(a.free||b.free)return;
-  const steps=26,turns=.75+k.value/25,radius=5+k.value*.06,length=32+k.value*.34,cx=(a.x+b.x)/2,cy=(a.y+b.y)/2-length*.85;
-  for(let i=0;i<steps;i++){
-    const segs=[];for(let strand=0;strand<2;strand++){const phase=strand*Math.PI,t=i/steps,t2=(i+1)/steps,ang=t*Math.PI*2*turns+phase,ang2=t2*Math.PI*2*turns+phase;segs.push({z:(Math.cos(ang)+Math.cos(ang2))/2,p:{x:cx+Math.sin(ang)*radius,y:cy+t*length},q:{x:cx+Math.sin(ang2)*radius,y:cy+t2*length},half1:2.2+Math.abs(Math.cos(ang))*4.4,half2:2.2+Math.abs(Math.cos(ang2))*4.4,strand});}
-    segs.sort((u,v)=>u.z-v.z).forEach(s=>{const hot=k.heat>35,front=s.z>0,fill=hot?(front?'#dce267':'#929b43'):(s.strand?(front?'#448e43':'#285f3b'):(front?'#63a94f':'#34713f'));ribbonSegment(s.p,s.q,s.half1,s.half2,fill,'#173f2c',hot?'#f1ed92':'#acd37b');});
-  }
-}
 function drawChar(c,i){
   const cosine=Math.cos(c.yaw),view=cosine>.38?0:cosine<-.38?2:1,source=tintedSprites[i]||sprite;
   ctx.save();ctx.translate(c.x,c.y);ctx.rotate(clamp(c.vx*.025,-.65,.65));if(Math.sin(c.yaw)<0)ctx.scale(-1,1);
@@ -153,7 +144,7 @@ function draw(){
   const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#176a7d');g.addColorStop(.62,'#07505e');g.addColorStop(1,'#032b3a');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
   drawMermaid();
   ctx.save();ctx.translate(rand(-shake,shake),rand(-shake,shake));ctx.fillStyle='#d6fff244';bubbles.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill()});
-  chars.forEach((c,i)=>{if(!c.free)strokeRope(ropePath(c),c,i)});knots.forEach(drawKnot);chars.forEach(drawChar);
+  chars.forEach((c,i)=>{if(!c.free)strokeRope(ropePath(c),c,i)});chars.forEach(drawChar);
   scraps.forEach(s=>{ctx.save();ctx.globalAlpha=s.life;ctx.translate(s.x,s.y);ctx.rotate(s.a);ctx.fillStyle='#328d48';ctx.strokeStyle='#173f2c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-11,-38);ctx.quadraticCurveTo(-8,-18,-12,0);ctx.quadraticCurveTo(-7,18,-10,38);ctx.lineTo(10,38);ctx.quadraticCurveTo(7,18,12,0);ctx.quadraticCurveTo(8,-18,11,-38);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();});
   fibers.forEach(f=>{ctx.globalAlpha=f.life;ctx.fillStyle='#bce369';ctx.fillRect(f.x,f.y,rand(2,5),rand(4,10))});ctx.globalAlpha=1;ctx.restore();
   if(messageLife>0){ctx.globalAlpha=clamp(messageLife*2,0,1);ctx.fillStyle='#fffbd1';ctx.font='900 20px system-ui';ctx.textAlign='center';ctx.fillText(message,W/2,H*.72);ctx.globalAlpha=1;}
