@@ -102,8 +102,7 @@ function ribbonSegment(p,q,half1,half2,fill,edge,shine){
   const ang=Math.atan2(q.y-p.y,q.x-p.x),nx=-Math.sin(ang),ny=Math.cos(ang);
   const l1={x:p.x+nx*half1,y:p.y+ny*half1},r1={x:p.x-nx*half1,y:p.y-ny*half1};
   const l2={x:q.x+nx*half2,y:q.y+ny*half2},r2={x:q.x-nx*half2,y:q.y-ny*half2};
-  ctx.fillStyle=fill;ctx.strokeStyle=edge;ctx.lineWidth=1.35;ctx.lineJoin='round';
-  ctx.beginPath();ctx.moveTo(l1.x,l1.y);ctx.lineTo(l2.x,l2.y);ctx.lineTo(r2.x,r2.y);ctx.lineTo(r1.x,r1.y);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(l1.x,l1.y);ctx.lineTo(l2.x,l2.y);ctx.lineTo(r2.x,r2.y);ctx.lineTo(r1.x,r1.y);ctx.closePath();ctx.fill();
   if(Math.max(half1,half2)>4){
     ctx.strokeStyle=shine;ctx.lineWidth=1.25;ctx.globalAlpha=.56;ctx.beginPath();
     ctx.moveTo(p.x+nx*half1*.52,p.y+ny*half1*.52);ctx.lineTo(q.x+nx*half2*.52,q.y+ny*half2*.52);ctx.stroke();ctx.globalAlpha=1;
@@ -111,16 +110,19 @@ function ribbonSegment(p,q,half1,half2,fill,edge,shine){
 }
 function strokeRope(points,c,id){
   const turns=.72+Math.abs(c.torsion)/34,phaseBase=c.torsion*.045+id*.82,baseHalf=clamp(W*.032,11.5,15.5);
-  ctx.save();
+  const widths=[];ctx.save();
   for(let i=0;i<points.length-1;i++){
     const t=i/(points.length-1),t2=(i+1)/(points.length-1),phase=phaseBase+t*Math.PI*2*turns,phase2=phaseBase+t2*Math.PI*2*turns;
     const softEdge=Math.sin(i*1.47+id)*1.15,softEdge2=Math.sin((i+1)*1.47+id)*1.15;
     const half1=baseHalf*(.17+.83*Math.abs(Math.cos(phase)))+softEdge;
     const half2=baseHalf*(.17+.83*Math.abs(Math.cos(phase2)))+softEdge2;
+    widths[i]=half1;widths[i+1]=half2;
     const front=Math.cos((phase+phase2)/2)>0;
     const fill=c.flash?'#b9d85b':front?'#4a9345':'#28653d';
     ribbonSegment(points[i],points[i+1],half1,half2,fill,'#173f2c',front?'#a3cf72':'#5c9a58');
   }
+  ctx.strokeStyle='#173f2c';ctx.lineWidth=1.8;ctx.lineJoin='round';
+  for(const side of [-1,1]){ctx.beginPath();points.forEach((p,i)=>{const prev=points[Math.max(0,i-1)],next=points[Math.min(points.length-1,i+1)],ang=Math.atan2(next.y-prev.y,next.x-prev.x),nx=-Math.sin(ang),ny=Math.cos(ang),x=p.x+nx*widths[i]*side,y=p.y+ny*widths[i]*side;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();}
   ctx.restore();
 }
 function drawKnot(k){
