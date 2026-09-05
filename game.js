@@ -4,6 +4,15 @@ let pointer=null,awareness=0,shake=0,message='',messageLife=0,freed=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rand=(a,b)=>a+Math.random()*(b-a);
 const sprite=new Image(),tintedSprites=[];
 const bgm=new Audio('assets/pyoko-dance.mp3?v=1');bgm.loop=true;bgm.volume=.34;let soundOn=true;
+const sfx={
+  reverse:new Audio('assets/se/01_reverse_spin_limit.mp3'),
+  collision:new Audio('assets/se/02_wakame_tangle_collision.mp3'),
+  snap:new Audio('assets/se/03_wakame_snap_satisfying.mp3'),
+  swim:new Audio('assets/se/04_character_swim_escape.mp3'),
+  caught:new Audio('assets/se/05_caught_by_mermaid.mp3')
+},sfxVolume={reverse:.74,collision:.62,snap:.78,swim:.58,caught:.78},sfxGap={reverse:420,collision:210,snap:100,swim:180,caught:500},lastSfx={};
+Object.values(sfx).forEach(a=>{a.preload='auto';});
+function playSfx(name){if(!soundOn||!sfx[name])return;const now=performance.now();if(now-(lastSfx[name]||0)<sfxGap[name])return;lastSfx[name]=now;const a=sfx[name];a.pause();a.currentTime=0;a.volume=sfxVolume[name];a.play().catch(()=>{});}
 sprite.src='assets/sea-friend-sprites.webp?v=1';
 sprite.onload=()=>{
   ['#f0afbd','#f0d27d','#9ed8e6','#f0dfb8','#b5d19a'].forEach((color,i)=>{const c=document.createElement('canvas');c.width=sprite.width;c.height=sprite.height;const x=c.getContext('2d');x.drawImage(sprite,0,0);x.globalCompositeOperation='source-atop';x.globalAlpha=.25;x.fillStyle=color;x.fillRect(0,0,c.width,c.height);tintedSprites[i]=c;});
@@ -41,7 +50,7 @@ canvas.addEventListener('pointerup',e=>{
       knots.filter(k=>k.a===pointer.i||k.b===pointer.i).forEach(k=>{if(k.value>12){k.value=clamp(k.value+force*.65,0,100);k.heat=clamp(k.heat+force*.8,0,100);const other=chars[k.a===pointer.i?k.b:k.a];c.hp-=force*.08;other.hp-=force*.05;}});say(dy<0?'縦に引っぱる！':'上から圧縮！',.65);
     }
     if(dir&&c.lastDir&&dir!==c.lastDir&&performance.now()-c.lastFlick<950){
-      knots.filter(k=>k.a===pointer.i||k.b===pointer.i).forEach(k=>{if(k.value>10){k.value=clamp(k.value+9,0,100);k.heat=clamp(k.heat+12,0,100);const other=chars[k.a===pointer.i?k.b:k.a];c.hp-=2.4;other.hp-=1.6;}});c.torsion*=.76;say('逆回転！ ギュルルッ！',.7);
+      let reversed=false;knots.filter(k=>k.a===pointer.i||k.b===pointer.i).forEach(k=>{if(k.value>10){k.value=clamp(k.value+9,0,100);k.heat=clamp(k.heat+12,0,100);const other=chars[k.a===pointer.i?k.b:k.a];c.hp-=2.4;other.hp-=1.6;reversed=true;}});c.torsion*=.76;if(reversed)playSfx('reverse');say('逆回転！ ギュルルッ！',.7);
     }
     if(dir){c.lastDir=dir;c.lastFlick=performance.now();}awareness+=Math.max(0,speed-.8)*1.2;
   }
@@ -60,6 +69,7 @@ function entangle(k,dt){
       a.torsion=clamp(a.torsion-spin*5,-140,140);b.torsion=clamp(b.torsion+spin*5,-140,140);
       a.impactBend=-spin*clamp(rel*2.4,7,22);b.impactBend=spin*clamp(rel*2.4,7,22);
       impacts.push({x:k.x,y:k.y,r:7,life:1,spin});k.cooldown=.34;shake=Math.min(7,shake+2.2);
+      playSfx('collision');
       say(k.value>65?'ぐるぐる！ いま引き離せ！':'ぶつかった！ くるんっ！',.55);a.flash=b.flash=1;
       if(navigator.vibrate)navigator.vibrate(18);
     }
@@ -74,6 +84,7 @@ function entangle(k,dt){
 
 function release(c){
   if(c.free)return;c.free=true;freed++;c.vy=-2;c.vx=c.escapeDir*2.2;c.av*=1.6;shake=14;say(freed===chars.length?'全員ほどけた！':'ひとり脱出！',1.1);
+  playSfx('snap');setTimeout(()=>playSfx('swim'),170);
   scraps.push({x:c.x,y:c.y-25,vx:c.escapeDir*45,vy:15,a:0,av:c.escapeDir*2.5,life:1});
   for(let n=0;n<25;n++)fibers.push({x:c.x+rand(-25,25),y:c.y+rand(-25,25),vx:rand(-130,130),vy:rand(-150,50),life:1});
   if(navigator.vibrate)navigator.vibrate([35,25,55]);
@@ -173,7 +184,7 @@ function draw(){
   $('#score').textContent=Math.floor(avgKnot)+'%';$('#distance').textContent=Math.floor(avgHeat);
 }
 function loop(now){if(!running)return;const dt=Math.min(.032,(now-last)/1000);last=now;update(dt);draw();requestAnimationFrame(loop);}
-function finish(win){if(!running)return;running=false;bgm.pause();const t=(performance.now()-started)/1000;$('#result-score').textContent=t.toFixed(1);$('.eyebrow','#result-panel');$('#result-panel .eyebrow').textContent=win?'全員脱出！':'見つかってしまった…';$('#result-copy').textContent=win?'絡ませてから逆へ引くのが脱出のコツ！':'隣の子へぶつけて絡ませ、すぐ逆方向へ引こう。';$('#result-panel').classList.remove('hidden');}
-$('#sound-button').onclick=()=>{soundOn=!soundOn;$('#sound-button').textContent=soundOn?'🔊':'🔇';$('#sound-button').setAttribute('aria-label',soundOn?'音を消す':'音を出す');if(!soundOn)bgm.pause();else if(running)bgm.play().catch(()=>{});};
+function finish(win){if(!running)return;running=false;bgm.pause();if(!win)playSfx('caught');const t=(performance.now()-started)/1000;$('#result-score').textContent=t.toFixed(1);$('.eyebrow','#result-panel');$('#result-panel .eyebrow').textContent=win?'全員脱出！':'見つかってしまった…';$('#result-copy').textContent=win?'絡ませてから逆へ引くのが脱出のコツ！':'隣の子へぶつけて絡ませ、すぐ逆方向へ引こう。';$('#result-panel').classList.remove('hidden');}
+$('#sound-button').onclick=()=>{soundOn=!soundOn;$('#sound-button').textContent=soundOn?'🔊':'🔇';$('#sound-button').setAttribute('aria-label',soundOn?'音を消す':'音を出す');if(!soundOn){bgm.pause();Object.values(sfx).forEach(a=>a.pause());}else if(running)bgm.play().catch(()=>{});};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)bgm.pause();else if(soundOn&&running)bgm.play().catch(()=>{});});
 $('#start-button').onclick=reset;$('#retry-button').onclick=reset;draw();
