@@ -23,14 +23,15 @@ addEventListener('resize',resize);resize();
 
 function reset(){
   const colors=['#f1c5d0','#f5df9d','#abdff0','#efe0bd','#c7dcb6'];
+  const heightPattern=[.40,.51,.46,.55,.43];
   const spacing=Math.min(66,W*.16);
   chars=colors.map((color,i)=>{
-    const home=W/2+(i-2)*spacing;
-    return {x:home,y:H*.47,vx:0,vy:0,a:0,av:0,yaw:i%2?Math.PI:0,yawV:0,torsion:0,twistReach:.12,impactBend:0,pump:0,r:Math.min(24,W*.057),color,
+    const home=W/2+(i-2)*spacing,homeY=H*heightPattern[i];
+    return {x:home,y:homeY,vx:0,vy:0,a:0,av:0,yaw:i%2?Math.PI:0,yawV:0,torsion:0,twistReach:.12,impactBend:0,contactBend:0,contactT:.75,pump:0,r:Math.min(24,W*.057),color,
       home,hp:100,free:false,escaped:false,flash:0,face:0,lastDir:0,lastFlick:0,
-      anchor:home,escapeDir:i<2?-1:1};
+      homeY,depth:i*.01,anchor:home,escapeDir:i<2?-1:1};
   });
-  knots=Array.from({length:4},(_,i)=>({a:i,b:i+1,value:0,heat:0,cooldown:0,x:(chars[i].home+chars[i+1].home)/2,y:H*.38}));
+  knots=[];for(let a=0;a<chars.length;a++)for(let b=a+1;b<chars.length;b++)knots.push({a,b,value:0,heat:0,lock:0,cooldown:0,over:b,wrapPhase:0,tA:.7,tB:.7,x:(chars[a].home+chars[b].home)/2,y:H*.38});
   awareness=shake=freed=0;fibers=[];scraps=[];impacts=[];message='動かす子に触ってフリック';messageLife=2.5;
   bubbles=Array.from({length:18},()=>({x:rand(0,W),y:rand(0,H),r:rand(1,5),s:rand(9,30)}));
   running=true;last=started=performance.now();$('#start-panel').classList.add('hidden');$('#result-panel').classList.add('hidden');
@@ -57,22 +58,38 @@ canvas.addEventListener('pointerup',e=>{
   pointer=null;
 });
 
+function ropeContact(a,b){
+  const pa=ropePath(a),pb=ropePath(b);let best=null,bestD=24;
+  for(let i=6;i<pa.length;i+=2)for(let j=6;j<pb.length;j+=2){
+    const d=Math.hypot(pa[i].x-pb[j].x,pa[i].y-pb[j].y);
+    if(d<bestD){bestD=d;best={x:(pa[i].x+pb[j].x)/2,y:(pa[i].y+pb[j].y)/2,tA:i/(pa.length-1),tB:j/(pb.length-1)};}
+  }
+  return best;
+}
 function entangle(k,dt){
   const a=chars[k.a],b=chars[k.b];if(a.free||b.free)return;
-  k.cooldown=Math.max(0,k.cooldown-dt);const dx=b.x-a.x,dy=b.y-a.y,dist=Math.max(1,Math.hypot(dx,dy)),rel=Math.hypot(a.vx-b.vx,a.vy-b.vy);
-  if(dist<a.r+b.r+26&&rel>1.1){
-    const gain=rel*dt*3.2;k.value=clamp(k.value+gain,0,100);k.x=(a.x+b.x)/2;k.y=(a.y+b.y)/2-35;
+  k.cooldown=Math.max(0,k.cooldown-dt);const dx=b.x-a.x,dy=b.y-a.y,dist=Math.max(1,Math.hypot(dx,dy)),rel=Math.hypot(a.vx-b.vx,a.vy-b.vy),contact=ropeContact(a,b),bodyHit=dist<a.r+b.r+22;
+  if((contact||bodyHit)&&rel>.75){
+    const gain=rel*dt*(contact?4.5:3.2);k.value=clamp(k.value+gain,0,100);
+    if(contact){k.x=contact.x;k.y=contact.y;k.tA=contact.tA;k.tB=contact.tB;}else{k.x=(a.x+b.x)/2;k.y=(a.y+b.y)/2-35;k.tA=k.tB=.88;}
+    k.lock=clamp(k.lock+dt*(.35+rel*.16),0,1);k.wrapPhase+=rel*dt*.38;
     if(k.cooldown<=0&&rel>2){
       const nx=dx/dist,ny=dy/dist,impulse=clamp(rel*.32,.7,2.5),spin=Math.sign(b.vx-a.vx)||1;
       a.vx-=nx*impulse;a.vy-=ny*impulse*.35;b.vx+=nx*impulse;b.vy+=ny*impulse*.35;
       a.av-=spin*.055;b.av+=spin*.055;a.yawV-=spin*.025;b.yawV+=spin*.025;
       a.torsion=clamp(a.torsion-spin*5,-140,140);b.torsion=clamp(b.torsion+spin*5,-140,140);
-      a.impactBend=-spin*clamp(rel*2.4,7,22);b.impactBend=spin*clamp(rel*2.4,7,22);
+      const bend=clamp(rel*2.4,7,22);a.contactT=k.tA;b.contactT=k.tB;a.contactBend=-spin*bend;b.contactBend=spin*bend;
+      a.impactBend=-spin*bend*.45;b.impactBend=spin*bend*.45;k.over=k.over===k.a?k.b:k.a;
       impacts.push({x:k.x,y:k.y,r:7,life:1,spin});k.cooldown=.34;shake=Math.min(7,shake+2.2);
       playSfx('collision');
       say(k.value>65?'ぐるぐる！ いま引き離せ！':'ぶつかった！ くるんっ！',.55);a.flash=b.flash=1;
       if(navigator.vibrate)navigator.vibrate(18);
     }
+  }else k.lock=Math.max(0,k.lock-dt*.16);
+  if(k.lock>.18){
+    const spin=Math.sin(k.wrapPhase)*k.lock,orbit=.0009*k.lock;
+    a.vx+=dy*orbit*spin;a.vy-=dx*orbit*spin;b.vx-=dy*orbit*spin;b.vy+=dx*orbit*spin;
+    const pull=clamp((dist-92)*.00014,-.012,.022)*k.lock;a.vx+=dx*pull;b.vx-=dx*pull;a.vy+=dy*pull;b.vy-=dy*pull;
   }
   const apart=(b.x-a.x)*(b.vx-a.vx)>0?Math.abs(b.vx-a.vx):0;
   if(k.value>14&&apart>1.2){
@@ -98,17 +115,17 @@ function update(dt){
     if(c.free){c.vy-=5*dt;c.vx+=c.escapeDir*.025;c.x+=c.vx;c.y+=c.vy;c.a+=c.av;c.yaw+=c.yawV;if(c.y<-70||c.x<-70||c.x>W+70)c.escaped=true;return;}
     const localWrap=knots.filter(k=>k.a===chars.indexOf(c)||k.b===chars.indexOf(c)).reduce((s,k)=>s+k.value,0);
     const cluster=W/2, tangledPull=(cluster-c.x)*localWrap*.000006;
-    const pull=(c.home-c.x)*.0024+tangledPull;c.vx=(c.vx+pull)*Math.pow(.78,dt);c.vy=(c.vy+(H*.47-c.y)*.0014)*Math.pow(.7,dt);
+    const pull=(c.home-c.x)*.0024+tangledPull;c.vx=(c.vx+pull)*Math.pow(.78,dt);c.vy=(c.vy+(c.homeY-c.y)*.0014)*Math.pow(.7,dt);
     c.x+=c.vx;c.y+=c.vy;c.av=(c.av+c.vx*.002)*Math.pow(.82,dt);c.a+=c.av;
     c.torsion=clamp(c.torsion+c.yawV*.55,-100,100);if(Math.abs(c.torsion)>68)c.yawV-=Math.sign(c.torsion)*.0045;
     const reachTarget=.14+.86*clamp(Math.abs(c.torsion)/105,0,1),reachSpeed=reachTarget>c.twistReach ? .42 : .10;
-    c.twistReach+=(reachTarget-c.twistReach)*dt*reachSpeed;c.impactBend*=Math.pow(.045,dt);
+    c.twistReach+=(reachTarget-c.twistReach)*dt*reachSpeed;c.impactBend*=Math.pow(.045,dt);c.contactBend*=Math.pow(.09,dt);
     c.yawV*=Math.pow(.12,dt);c.yaw+=c.yawV;c.pump=Math.max(0,c.pump-dt*8);
     c.hp-=(Math.abs(c.torsion)*.0018+Math.abs(c.vx)*.010+Math.abs(c.vy)*.012+Math.abs(c.yawV)*.11+c.pump*.0015)*dt;
     c.x=clamp(c.x,c.r,W-c.r);c.y=clamp(c.y,H*.25,H*.66);
   });
   knots.forEach(k=>entangle(k,dt));
-  const active=chars.filter(c=>!c.free),avgKnot=knots.reduce((s,k)=>s+k.value,0)/knots.length;
+  const active=chars.filter(c=>!c.free),engaged=knots.filter(k=>k.value>1),avgKnot=engaged.length?engaged.reduce((s,k)=>s+k.value,0)/engaged.length:0;
   if(active.length>=3&&avgKnot>35){const span=Math.max(...active.map(c=>c.x))-Math.min(...active.map(c=>c.x));if(span<W*.55){const groupWear=active.reduce((s,c)=>s+Math.abs(c.vx)+Math.abs(c.yawV)*5,0)*dt*.018;active.forEach(c=>c.hp-=groupWear);}}
   chars.forEach(c=>{if(c.hp<=0)release(c)});
   fibers.forEach(f=>{f.life-=dt*1.5;f.vy+=80*dt;f.x+=f.vx*dt;f.y+=f.vy*dt});fibers=fibers.filter(f=>f.life>0);
@@ -120,7 +137,7 @@ function update(dt){
 
 function ropePath(c){
   const ax=c.anchor,attachX=c.x,attachY=c.y-c.r*.55,n=28,p=[];
-  for(let i=0;i<=n;i++){const t=i/n,impact=c.impactBend*Math.exp(-Math.pow((t-.77)/.115,2)),wave=Math.sin(t*Math.PI)*(Math.sin(performance.now()*.003+i*.8)*5+(c.x-c.home)*-.12)+impact;p.push({x:ax+(attachX-ax)*t+wave,y:-10+(attachY+10)*t});}return p;
+  for(let i=0;i<=n;i++){const t=i/n,impact=c.impactBend*Math.exp(-Math.pow((t-.77)/.115,2)),contact=c.contactBend*Math.exp(-Math.pow((t-c.contactT)/.075,2)),wave=Math.sin(t*Math.PI)*(Math.sin(performance.now()*.003+i*.8)*5+(c.x-c.home)*-.12)+impact+contact;p.push({x:ax+(attachX-ax)*t+wave,y:-10+(attachY+10)*t});}return p;
 }
 function ribbonSegment(p,q,half1,half2,fill,edge,shine){
   const ang=Math.atan2(q.y-p.y,q.x-p.x),nx=-Math.sin(ang),ny=Math.cos(ang);
@@ -132,12 +149,12 @@ function ribbonSegment(p,q,half1,half2,fill,edge,shine){
     ctx.moveTo(p.x+nx*half1*.52,p.y+ny*half1*.52);ctx.lineTo(q.x+nx*half2*.52,q.y+ny*half2*.52);ctx.stroke();ctx.globalAlpha=1;
   }
 }
-function strokeRope(points,c,id){
+function strokeRope(points,c,id,startT=0,endT=1){
   const baseTurns=1.55,extraTurns=Math.abs(c.torsion)/9.5,twistSign=Math.sign(c.torsion)||(id%2?1:-1),reach=clamp(c.twistReach,.08,1),phaseBase=c.torsion*.035+id*.82,baseHalf=clamp(W*.032,11.5,15.5);
   const phaseAt=t=>{const u=clamp(t/reach,0,1),travel=u*u*(3-2*u);return phaseBase+Math.PI*2*(baseTurns*t+twistSign*extraTurns*travel);};
   const widths=[],phases=[];ctx.save();
   for(let i=0;i<points.length-1;i++){
-    const t=i/(points.length-1),t2=(i+1)/(points.length-1),phase=phaseAt(t),phase2=phaseAt(t2);
+    const t=startT+(endT-startT)*i/(points.length-1),t2=startT+(endT-startT)*(i+1)/(points.length-1),phase=phaseAt(t),phase2=phaseAt(t2);
     const softEdge=Math.sin(i*1.47+id)*1.15,softEdge2=Math.sin((i+1)*1.47+id)*1.15;
     const half1=baseHalf*(.17+.83*Math.abs(Math.cos(phase)))+softEdge;
     const half2=baseHalf*(.17+.83*Math.abs(Math.cos(phase2)))+softEdge2;
@@ -166,6 +183,9 @@ function drawChar(c,i){
 function drawImpacts(){
   impacts.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.globalAlpha=p.life;ctx.strokeStyle='#b9fff0';ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=p.life*.7;ctx.strokeStyle='#78dccc';ctx.beginPath();ctx.arc(0,0,p.r+7,-1.25,.35);ctx.stroke();ctx.beginPath();ctx.arc(0,0,p.r+7,1.9,3.5);ctx.stroke();ctx.restore();});
 }
+function drawContactOverpasses(){
+  knots.forEach(k=>{if(k.lock<.12)return;const id=k.over,c=chars[id];if(c.free)return;const path=ropePath(c),t=id===k.a?k.tA:k.tB,center=Math.round(t*(path.length-1)),from=clamp(center-2,0,path.length-2),to=clamp(center+2,from+1,path.length-1);strokeRope(path.slice(from,to+1),c,id,from/(path.length-1),to/(path.length-1));});
+}
 function drawMermaid(){
   if(awareness<55)return;const p=(awareness-55)/45,size=45+p*95,x=W+35-p*85,y=H*.17;ctx.save();ctx.globalAlpha=.12+p*.48;ctx.translate(x,y);ctx.fillStyle='#071b2b';ctx.beginPath();ctx.arc(0,0,size,0,7);ctx.fill();ctx.beginPath();ctx.moveTo(-size*.6,size*.45);ctx.quadraticCurveTo(-size*1.3,size*1.25,-size*.3,size*1.55);ctx.quadraticCurveTo(size*.5,size*1.2,size*.72,size*.45);ctx.fill();ctx.fillStyle='#ffdf72';ctx.beginPath();ctx.arc(-size*.3,-size*.1,4+p*4,0,7);ctx.arc(size*.12,-size*.1,4+p*4,0,7);ctx.fill();ctx.restore();
 }
@@ -173,14 +193,14 @@ function draw(){
   const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#176a7d');g.addColorStop(.62,'#07505e');g.addColorStop(1,'#032b3a');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
   drawMermaid();
   ctx.save();ctx.translate(rand(-shake,shake),rand(-shake,shake));ctx.fillStyle='#d6fff244';bubbles.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill()});
-  chars.forEach((c,i)=>{if(!c.free)strokeRope(ropePath(c),c,i)});drawImpacts();chars.forEach(drawChar);
+  chars.map((c,i)=>({c,i})).filter(o=>!o.c.free).sort((a,b)=>a.c.depth-b.c.depth).forEach(o=>strokeRope(ropePath(o.c),o.c,o.i));drawContactOverpasses();drawImpacts();chars.forEach(drawChar);
   scraps.forEach(s=>{ctx.save();ctx.globalAlpha=s.life;ctx.translate(s.x,s.y);ctx.rotate(s.a);ctx.fillStyle='#328d48';ctx.strokeStyle='#173f2c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-11,-38);ctx.quadraticCurveTo(-8,-18,-12,0);ctx.quadraticCurveTo(-7,18,-10,38);ctx.lineTo(10,38);ctx.quadraticCurveTo(7,18,12,0);ctx.quadraticCurveTo(8,-18,11,-38);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();});
   fibers.forEach(f=>{ctx.globalAlpha=f.life;ctx.fillStyle='#bce369';ctx.fillRect(f.x,f.y,rand(2,5),rand(4,10))});ctx.globalAlpha=1;ctx.restore();
   if(messageLife>0){ctx.globalAlpha=clamp(messageLife*2,0,1);ctx.fillStyle='#fffbd1';ctx.font='900 20px system-ui';ctx.textAlign='center';ctx.fillText(message,W/2,H*.72);ctx.globalAlpha=1;}
   // 人魚に見つかるまで
   ctx.fillStyle='#0019';ctx.fillRect(18,H-34,W-36,11);ctx.fillStyle=awareness>70?'#fa706c':'#edcf5c';ctx.fillRect(18,H-34,(W-36)*clamp(awareness,0,100)/100,11);
   ctx.fillStyle='#fff';ctx.font='700 11px system-ui';ctx.textAlign='center';ctx.fillText('人魚の気配',W/2,H-40);
-  const avgKnot=knots.length?knots.reduce((s,k)=>s+k.value,0)/knots.length:0,avgHeat=knots.length?knots.reduce((s,k)=>s+k.heat,0)/knots.length:0;
+  const engaged=knots.filter(k=>k.value>1),avgKnot=engaged.length?engaged.reduce((s,k)=>s+k.value,0)/engaged.length:0,avgHeat=engaged.length?engaged.reduce((s,k)=>s+k.heat,0)/engaged.length:0;
   $('#score').textContent=Math.floor(avgKnot)+'%';$('#distance').textContent=Math.floor(avgHeat);
 }
 function loop(now){if(!running)return;const dt=Math.min(.032,(now-last)/1000);last=now;update(dt);draw();requestAnimationFrame(loop);}
