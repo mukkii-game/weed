@@ -134,7 +134,7 @@ function draw(){
   // 人魚に見つかるまで
   ctx.fillStyle='#0019';ctx.fillRect(18,H-34,W-36,11);ctx.fillStyle=awareness>70?'#fa706c':'#edcf5c';ctx.fillRect(18,H-34,(W-36)*clamp(awareness,0,100)/100,11);
   ctx.fillStyle='#fff';ctx.font='700 11px system-ui';ctx.textAlign='center';ctx.fillText('人魚の気配',W/2,H-40);
-  const avgKnot=knots.reduce((s,k)=>s+k.value,0)/knots.length,avgHeat=knots.reduce((s,k)=>s+k.heat,0)/knots.length;
+  const avgKnot=knots.length?knots.reduce((s,k)=>s+k.value,0)/knots.length:0,avgHeat=knots.length?knots.reduce((s,k)=>s+k.heat,0)/knots.length:0;
   $('#score').textContent=Math.floor(avgKnot)+'%';$('#distance').textContent=Math.floor(avgHeat);
 }
 function loop(now){if(!running)return;const dt=Math.min(.032,(now-last)/1000);last=now;update(dt);draw();requestAnimationFrame(loop);}
