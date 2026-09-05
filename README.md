@@ -16,4 +16,6 @@
 - 制限時間が近づくと巨大な人魚の影が迫ります。
 - BGM「ぴょこぴょこダンス」とミュートボタンを搭載しています。
 
+BGM: 「ぴょこぴょこダンス / Hopping Popping Dance」蒲鉾さちこ
+
 GitHub Pagesでそのまま公開できる、依存ライブラリなしのHTML/CSS/JavaScript構成です。
