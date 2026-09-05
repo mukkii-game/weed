@@ -5,31 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#061d26" />
   <title>ワカメ脱出</title>
-  <link rel="stylesheet" href="style.css?v=20260905-2" />
+  <link rel="stylesheet" href="style.css?v=20260906-1" />
 </head>
 <body>
   <main id="game-shell">
     <canvas id="game" aria-label="ワカメ脱出ゲーム"></canvas>
-    <section id="hud" aria-live="polite">
-      <div><span class="label">ねじれ</span><strong id="score">0%</strong></div>
+    <section id="hud" class="hidden">
+      <div><span class="label">すいすい脱出</span><strong id="score">0 / 5</strong></div>
       <div class="combo"><strong id="combo"></strong></div>
-      <div><span class="label">摩擦熱</span><strong><span id="distance">0</span>%</strong></div>
+      <div><span class="label">人魚が来るまで</span><strong><span id="distance">60</span>秒</strong></div>
+      <div class="timer"><i id="timer-fill"></i></div>
+      <p id="play-hint">タップでくるるっ · 引っぱって、はなす！</p>
     </section>
     <button id="sound-button" aria-label="音を消す">🔊</button>
+    <button id="music-button" aria-label="BGMを切り替える">♫ ぽこぽこ</button>
     <section id="start-panel" class="panel">
-      <p class="eyebrow">じたばた脱出アクション</p>
-      <h1>ワカメ脱出</h1>
-      <p>5人を触って左右へフリック！<br />ワカメをぶつけ、ねじって、弱らせろ。</p>
-      <div class="gesture"><span>←</span><i></i><span>→</span></div>
-      <button id="start-button">じたばた開始</button>
+      <div class="title-top"><p class="eyebrow">つつく。のばす。ぎゅルルン！</p>
+      <h1>ワカメ<span>脱出</span></h1><p class="subtitle">ダシになるのは、まだ早い。</p></div>
+      <div class="title-bottom"><p>つかまった5人を、じたばた助けよう。<br />60秒で、みんな自由に！</p>
+      <button id="start-button">じたばた、はじめる！</button>
+      <p class="mini">タップで回転 · ドラッグでびよーん</p></div>
     </section>
     <section id="result-panel" class="panel hidden">
       <p class="eyebrow">脱出成功！</p>
-      <h2><span id="result-score">0.0</span>秒</h2>
+      <h2><span id="result-score">0.0</span></h2><p id="result-unit">秒で、自由！</p>
       <p id="result-copy"></p>
-      <button id="retry-button">もう一度</button>
+      <p id="result-stats"></p><p id="best-score"></p>
+      <button id="retry-button">もうひと暴れ！</button>
+      <button id="share-button">友だちにも、じたばた</button>
     </section>
   </main>
-  <script src="game.js?v=20260905-16"></script>
+  <script src="game.js?v=20260906-1"></script>
 </body>
 </html>

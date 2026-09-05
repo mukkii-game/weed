@@ -1,0 +1,13 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const events={},nodes={};const noop=()=>{};
+const context=new Proxy({createLinearGradient:()=>({addColorStop:noop})},{get:(o,k)=>o[k]||noop,set:(o,k,v)=>(o[k]=v,true)});
+function element(id){return nodes[id]??={textContent:'',style:{},classList:{add:noop,remove:noop},setAttribute:noop,getContext:()=>context,addEventListener:(k,fn)=>events[k]=fn,setPointerCapture:noop,hasPointerCapture:()=>false};}
+const env={console,Math,innerWidth:390,innerHeight:780,devicePixelRatio:1,document:{querySelector:element,addEventListener:noop,createElement:()=>element('offscreen')},window:{},Audio:class{pause(){}play(){return Promise.resolve()}},Image:class{},navigator:{},performance:{now:()=>0},requestAnimationFrame:noop,addEventListener:noop,localStorage:{getItem:()=>null,setItem:noop},location:{href:'https://example.test'}};
+const c=vm.createContext(env);vm.runInContext(fs.readFileSync('game.js','utf8'),c);
+const run=s=>vm.runInContext(s,c);function step(seconds){for(let i=0;i<Math.ceil(seconds*60);i++)run('update(1/60)');}
+function tap(id){const p=run(`({x:chars[${id}].x,y:chars[${id}].y})`);events.pointerdown({pointerId:1,clientX:p.x,clientY:p.y});events.pointerup({pointerId:1,clientX:p.x,clientY:p.y});}
+run('start()');step(60.1);assert.equal(run('mode'),'result');assert.equal(run('endWin'),false);assert.equal(run('chars.every(c=>c.hp===c.maxHp)'),true);console.log('PASS idle: no wear, loses at 60s');
+run('start()');let taps=0;while(run("mode==='play'")&&taps<140){const ids=run('remaining().map(c=>c.id)');tap(ids[taps%ids.length]);taps++;step(.4);}assert.equal(run('endWin'),true);console.log('PASS casual taps',JSON.stringify(run('({elapsed,stats})')),'inputs',taps);
+run('start();chars.slice(0,4).forEach(release)');let solo=0;while(run("mode==='play' && !chars[4].free")&&solo<20){tap(4);solo++;step(.35);}assert.equal(run('chars[4].free'),true);assert.ok(solo<=4);console.log('PASS solo finish',solo,'taps');
+run('start()');let p=run('({x:chars[0].x,y:chars[0].y})');events.pointerdown({pointerId:2,clientX:p.x,clientY:p.y});for(let j=1;j<=15;j++){events.pointermove({pointerId:2,clientX:p.x+j*15,clientY:p.y+j*4});step(.035);}events.pointerup({pointerId:2,clientX:p.x+225,clientY:p.y+60});step(.8);assert.ok(run('stats.tangles')>0);console.log('PASS crossing drag',JSON.stringify(run('stats')));
+run('start()');p=run('({x:chars[2].x,y:chars[2].y})');events.pointerdown({pointerId:3,clientX:p.x,clientY:p.y});events.pointercancel({pointerId:3});assert.equal(run('pointer'),null);assert.equal(run('stats.taps'),0);run('draw()');console.log('PASS cancel and render');
