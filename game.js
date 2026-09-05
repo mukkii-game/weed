@@ -1,5 +1,5 @@
 const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d'),$=s=>document.querySelector(s);
-let W=0,H=0,dpr=1,running=false,last=0,started=0,chars=[],knots=[],bubbles=[],fibers=[];
+let W=0,H=0,dpr=1,running=false,last=0,started=0,chars=[],knots=[],bubbles=[],fibers=[],scraps=[];
 let pointer=null,awareness=0,shake=0,message='',messageLife=0,freed=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rand=(a,b)=>a+Math.random()*(b-a);
 
@@ -16,7 +16,7 @@ function reset(){
       anchors:[home-13,home+13],escapeDir:i<2?-1:1};
   });
   knots=Array.from({length:4},(_,i)=>({a:i,b:i+1,value:0,heat:0,x:(chars[i].home+chars[i+1].home)/2,y:H*.38}));
-  awareness=shake=freed=0;fibers=[];message='動かす子に触ってフリック';messageLife=2.5;
+  awareness=shake=freed=0;fibers=[];scraps=[];message='動かす子に触ってフリック';messageLife=2.5;
   bubbles=Array.from({length:18},()=>({x:rand(0,W),y:rand(0,H),r:rand(1,5),s:rand(9,30)}));
   running=true;last=started=performance.now();$('#start-panel').classList.add('hidden');$('#result-panel').classList.add('hidden');requestAnimationFrame(loop);
 }
