@@ -4,27 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
   <meta name="theme-color" content="#061d26" />
-  <title>ワカメ斬り</title>
+  <title>ワカメ脱出</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main id="game-shell">
-    <canvas id="game" aria-label="ワカメ斬りゲーム"></canvas>
+    <canvas id="game" aria-label="ワカメ脱出ゲーム"></canvas>
     <section id="hud" aria-live="polite">
-      <div><span class="label">SCORE</span><strong id="score">0</strong></div>
+      <div><span class="label">ねじれ</span><strong id="score">0%</strong></div>
       <div class="combo"><strong id="combo"></strong></div>
-      <div><span class="label">DISTANCE</span><strong><span id="distance">0</span>m</strong></div>
+      <div><span class="label">摩擦熱</span><strong><span id="distance">0</span>%</strong></div>
     </section>
     <section id="start-panel" class="panel">
-      <p class="eyebrow">海中脱出アクション</p>
-      <h1>ワカメ斬り</h1>
-      <p>左右に勢いよくフリック！<br />からみつくワカメをまとめて斬れ。</p>
+      <p class="eyebrow">じたばた脱出アクション</p>
+      <h1>ワカメ脱出</h1>
+      <p>左右へフリックして大きく振れ！<br />2本を絡ませ、ねじって、引きちぎれ。</p>
       <div class="gesture"><span>←</span><i></i><span>→</span></div>
-      <button id="start-button">脱出開始</button>
+      <button id="start-button">じたばた開始</button>
     </section>
     <section id="result-panel" class="panel hidden">
-      <p class="eyebrow">脱出失敗…</p>
-      <h2><span id="result-score">0</span>点</h2>
+      <p class="eyebrow">脱出成功！</p>
+      <h2><span id="result-score">0.0</span>秒</h2>
       <p id="result-copy"></p>
       <button id="retry-button">もう一度</button>
     </section>
