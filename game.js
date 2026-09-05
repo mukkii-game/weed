@@ -60,7 +60,7 @@ canvas.addEventListener('pointerup',e=>{
 
 function ropeContact(a,b){
   const pa=ropePath(a),pb=ropePath(b);let best=null,bestD=24;
-  for(let i=6;i<pa.length;i+=2)for(let j=6;j<pb.length;j+=2){
+  for(let i=12;i<pa.length;i+=3)for(let j=12;j<pb.length;j+=3){
     const d=Math.hypot(pa[i].x-pb[j].x,pa[i].y-pb[j].y);
     if(d<bestD){bestD=d;best={x:(pa[i].x+pb[j].x)/2,y:(pa[i].y+pb[j].y)/2,tA:i/(pa.length-1),tB:j/(pb.length-1)};}
   }
@@ -136,8 +136,8 @@ function update(dt){
 }
 
 function ropePath(c){
-  const ax=c.anchor,attachX=c.x,attachY=c.y-c.r*.55,n=28,p=[];
-  for(let i=0;i<=n;i++){const t=i/n,impact=c.impactBend*Math.exp(-Math.pow((t-.77)/.115,2)),contact=c.contactBend*Math.exp(-Math.pow((t-c.contactT)/.075,2)),wave=Math.sin(t*Math.PI)*(Math.sin(performance.now()*.003+i*.8)*5+(c.x-c.home)*-.12)+impact+contact;p.push({x:ax+(attachX-ax)*t+wave,y:-10+(attachY+10)*t});}return p;
+  const ax=c.anchor,attachX=c.x,attachY=c.y-c.r*.55,n=84,p=[];
+  for(let i=0;i<=n;i++){const t=i/n,impact=c.impactBend*Math.exp(-Math.pow((t-.77)/.115,2)),contact=c.contactBend*Math.exp(-Math.pow((t-c.contactT)/.075,2)),wave=Math.sin(t*Math.PI)*(Math.sin(performance.now()*.003+i*.27)*5+(c.x-c.home)*-.12)+impact+contact;p.push({x:ax+(attachX-ax)*t+wave,y:-10+(attachY+10)*t});}return p;
 }
 function ribbonSegment(p,q,half1,half2,fill,edge,shine){
   const ang=Math.atan2(q.y-p.y,q.x-p.x),nx=-Math.sin(ang),ny=Math.cos(ang);
@@ -155,7 +155,7 @@ function strokeRope(points,c,id,startT=0,endT=1){
   const widths=[],phases=[];ctx.save();
   for(let i=0;i<points.length-1;i++){
     const t=startT+(endT-startT)*i/(points.length-1),t2=startT+(endT-startT)*(i+1)/(points.length-1),phase=phaseAt(t),phase2=phaseAt(t2);
-    const softEdge=Math.sin(i*1.47+id)*1.15,softEdge2=Math.sin((i+1)*1.47+id)*1.15;
+    const softEdge=Math.sin(i*.49+id)*1.15,softEdge2=Math.sin((i+1)*.49+id)*1.15;
     const half1=baseHalf*(.17+.83*Math.abs(Math.cos(phase)))+softEdge;
     const half2=baseHalf*(.17+.83*Math.abs(Math.cos(phase2)))+softEdge2;
     widths[i]=half1;widths[i+1]=half2;phases[i]=phase;phases[i+1]=phase2;
