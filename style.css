@@ -44,9 +44,10 @@ button:active { transform: translateY(5px); box-shadow: 0 2px 0 #9d8536; }
 #start-panel { background: transparent; display: flex; flex-direction: column; justify-content: flex-start; pointer-events: none; padding: 21vh 16px max(30px, env(safe-area-inset-bottom)); }
 #start-panel button { pointer-events: auto; }
 .title-top { width: 100%; }
-h1 { font-size: clamp(62px, 18vw, 104px); font-weight: 1000; letter-spacing: -.105em; color: #fff3c9; text-shadow: 0 5px #235764, 0 10px #164858, 0 16px 28px #00151dcc; margin-top: 0; white-space: nowrap; }
+h1 { font-family: "メイリオ", "Hiragino Maru Gothic ProN", system-ui, sans-serif; font-size: clamp(72px, 21vw, 126px); font-weight: 900; letter-spacing: -.08em; color: #fff; text-shadow: 0 4px 0 #56727c, 0 10px 24px #00151dcc; margin-top: 0; white-space: nowrap; }
 h1 span { color: #caffdf; }
 .panel .subtitle { margin: 14px 0 0; font-size: 13px; font-weight: 700; }
+.title-top .subtitle { margin: 16px 0 0; font-family: "メイリオ", "Hiragino Maru Gothic ProN", system-ui, sans-serif; font-size: clamp(28px, 7vw, 42px); font-weight: 900; letter-spacing: .03em; color: #fff; text-shadow: 0 3px 10px #001b; }
 .eyebrow { font-size: 12px; letter-spacing: .07em; }
 .title-bottom { position: absolute; left: 16px; right: 16px; bottom: max(9vh, 70px); display: flex; flex-direction: column; align-items: center; }
 .title-bottom p { font-size: 13px; margin: 8px 0; }
@@ -59,6 +60,7 @@ button { font: 900 17px system-ui; background: #ffe4a0; box-shadow: 0 5px #bb956
 #result-panel p { margin: 5px 0; font-size: 13px; }
 #result-panel #result-unit { font-weight: 800; color: #ffe4a0; }
 #result-panel #result-stats, #result-panel #best-score { font-size: 12px; color: #bce8d8; }
+#result-panel #best-score { white-space: pre-line; margin: 20px 0 4px; font-size: clamp(30px, 8vw, 48px); line-height: 1.25; font-weight: 900; color: #fff1b8; text-shadow: 0 3px 10px #001b; }
 #result-panel button { margin-top: 15px; }
 #result-panel #share-button { margin-top: 12px; padding: 8px 15px; font-size: 12px; color: #d9ffee; background: transparent; border: 1px solid #c3eddb55; box-shadow: none; }
 @media (max-height: 620px) { .panel .subtitle { display: none; } h1 { font-size: 39px; } #start-panel { padding-top: 15px; padding-bottom: 12px; } .title-bottom p { margin: 3px; font-size: 11px; } #result-panel { padding: 15px; } #result-panel h2 { font-size: 38px; } }
