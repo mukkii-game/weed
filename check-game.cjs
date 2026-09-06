@@ -30,3 +30,4 @@ events.touchstart({cancelable:false,preventDefault:()=>{throw Error('Uncancelabl
 run("mode='result'");events.touchstart(touch);assert.equal(prevented,2);
 run("mode='title'");events.touchmove(touch);assert.equal(prevented,2);
 run('start()');tap(0);assert.equal(run('stats.taps'),1);console.log('PASS touch gesture guard is limited to gameplay; pointer input remains active');
+run('start()');const m0=run('({x:chars[0].x,y:chars[0].y})'),m1=run('({x:chars[1].x,y:chars[1].y})');events.pointerdown({pointerId:11,clientX:m0.x,clientY:m0.y});events.pointerdown({pointerId:12,clientX:m1.x,clientY:m1.y});assert.equal(run('pointers.length'),2);events.pointerup({pointerId:11,clientX:m0.x,clientY:m0.y});events.pointerup({pointerId:12,clientX:m1.x,clientY:m1.y});assert.equal(run('stats.taps'),2);assert.ok(run('clock-lastDrag')<.1);console.log('PASS multi-touch taps are tracked together and boost team motion');

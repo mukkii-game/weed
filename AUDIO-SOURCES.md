@@ -8,7 +8,7 @@ Active SE (user supplied on 2026-09-06; original MP3 bytes preserved):
 - assets/se/underwater-3.mp3 — 水中で息を吐く3.mp3
 - assets/se/yahhoo.mp3 — 男衆「イヤッホー！」.mp3
 
-The three underwater clips cycle across gameplay events. The cheer plays once at simultaneous release, as the clear fanfare. The existing on-screen SE credit remains 効果音ラボ; supplied files are the source of this replacement, no new download or licensing review was performed.
+The three underwater clips cycle across gameplay events. At simultaneous release, the cheer clip is played by five slightly offset audio instances as the clear fanfare. The existing on-screen SE credit remains 効果音ラボ; supplied files are the source of this replacement, no new download or licensing review was performed.
 
 Previously used assets/lab/boyon.mp3 is retained but no longer referenced by gameplay.
 Previous source: https://soundeffect-lab.info/sound/anime/

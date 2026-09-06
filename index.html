@@ -16,25 +16,22 @@
     <section id="hud" class="hidden">
       <div><span class="label">コンブのダメージ</span><strong id="score">0%</strong><span class="damage-track"><i id="damage-fill"></i></span></div>
       <div class="combo"><strong id="combo"></strong></div>
-      <div><span class="label">人魚が来るまで</span><strong><span id="distance">30</span>秒</strong></div>
+      <div id="countdown"><span class="label">人魚が来るまで</span><strong><span id="distance">30</span><small>秒</small></strong></div>
       <div class="timer"><i id="timer-fill"></i></div>
       <p id="play-hint">タップでくるるっ · 引っぱって、はなす！</p>
     </section>
     <button id="sound-button" aria-label="音を消す">🔊</button>
     <section id="start-panel" class="panel">
       <div class="title-top"><h1>コンブゲーム</h1></div>
-      <div class="title-bottom"><button id="start-button">脱出する！</button>
+      <div class="title-bottom"><p class="intro">タップやフリックで暴れまわって逃げ出すんだ！</p><button id="start-button">暴れて脱出！</button>
       <p class="mini">BGM:魔王魂　SE:効果音ラボ</p></div>
     </section>
     <section id="result-panel" class="panel hidden">
-      <p class="eyebrow">脱出成功！</p>
-      <h2><span id="result-score">0.0</span></h2><p id="result-unit">秒で、自由！</p>
-      <p id="result-copy"></p>
-      <p id="result-stats"></p><p id="best-score"></p>
+      <h2><span id="result-score">0.0</span></h2><p id="result-unit">秒</p>
+      <p id="best-score"></p>
       <button id="retry-button">もうひと暴れ！</button>
-      <button id="share-button">友だちにも、じたばた</button>
     </section>
   </main>
-  <script src="game.js?v=20260906-11"></script>
+  <script src="game.js?v=20260906-13"></script>
 </body>
 </html>
