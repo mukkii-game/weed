@@ -50,7 +50,7 @@ h1 span { color: #caffdf; }
 .eyebrow { font-size: 12px; letter-spacing: .07em; }
 .title-bottom { position: absolute; left: 16px; right: 16px; bottom: max(9vh, 70px); display: flex; flex-direction: column; align-items: center; }
 .title-bottom p { font-size: 13px; margin: 8px 0; }
-.title-bottom .intro { max-width: 100%; font-size: clamp(14px, 3.6vw, 18px); font-weight: 800; color: #edfff3; text-shadow: 0 2px 8px #001b; }
+.title-bottom .intro { max-width: 100%; font-size: clamp(28px, 7.2vw, 36px); line-height: 1.25; font-weight: 900; color: #edfff3; text-shadow: 0 2px 8px #001b; }
 button { font: 900 17px system-ui; background: #ffe4a0; box-shadow: 0 5px #bb9561, 0 10px 22px #133c4966; }
 .title-bottom button { margin-top: 6px; min-width: 250px; padding: 18px 30px; font-size: clamp(22px, 6vw, 30px); }
 .panel p.mini { font-size: 11px; opacity: .85; margin-top: 18px; }

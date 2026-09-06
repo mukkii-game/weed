@@ -12,10 +12,12 @@ Active SE (user supplied on 2026-09-06; original MP3 bytes preserved):
 - assets/se/cheer.mp3 — 歓声.mp3（開始0.5秒後）
 - assets/se/knife-2.mp3 — ナイフで突き刺す2.mp3（高威力接触）
 - assets/se/knife-3.mp3 — ナイフで突き刺す3.mp3（高威力接触）
+- assets/se/biting.mp3 — 噛みつく.mp3（捕食時、半速・3回）
 
 The three underwater clips cycle across gameplay events. At simultaneous release, the cheer clip is played by five slightly offset audio instances as the clear fanfare. The existing on-screen SE credit remains 効果音ラボ; supplied files are the source of this replacement, no new download or licensing review was performed.
 
 MAX twist uses the tightening clip, the start call-and-response uses male-oh followed by cheer after 0.5 seconds, and high-power collisions randomly choose either knife clip.
+When the mermaid catches the team, the biting clip is played three times at half speed to stretch the eating moment.
 
 Previously used assets/lab/boyon.mp3 is retained but no longer referenced by gameplay.
 Previous source: https://soundeffect-lab.info/sound/anime/

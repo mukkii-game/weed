@@ -25,6 +25,7 @@ run('start()');const p=run('({x:chars[2].x,y:chars[2].y})');events.pointerdown({
 assert.ok(run('chars.every(c=>ribbonGeometry(c).every(p=>Object.values(p).every(Number.isFinite)))'));console.log('PASS cancel and render');
 run('start()');const startPlay=plays.length;for(let i=0;i<3;i++){run("stopSE();se('tap')");step(.2);}assert.deepEqual(plays.slice(startPlay),['assets/se/underwater-1.mp3','assets/se/underwater-2.mp3','assets/se/underwater-3.mp3']);run('soundOn=false');const muted=plays.length;run("se('win');se('tap')");assert.equal(plays.length,muted);run('soundOn=true');console.log('PASS uploaded underwater clips cycle and mute applies to fanfare');
 run('start()');assert.equal(run('TEAM_HP'),910);assert.deepEqual(plays.slice(-2),['assets/se/male-oh.mp3','assets/se/cheer.mp3']);run("stopSE();se('recoil')");assert.equal(plays.at(-1),'assets/se/tightening-1.mp3');run("stopSE();se('power')");assert.ok(['assets/se/knife-2.mp3','assets/se/knife-3.mp3'].includes(plays.at(-1)));console.log('PASS start, max-twist, and high-power collision SE mapping');
+run("stopSE();mode='caught';se('caught')");assert.deepEqual(plays.slice(-3),['assets/se/biting.mp3','assets/se/biting.mp3','assets/se/biting.mp3']);console.log('PASS bite SE is stretched and repeated at capture');
 let prevented=0;const touch={cancelable:true,preventDefault:()=>prevented++};
 run('start()');events.touchstart(touch);events.touchmove(touch);assert.equal(prevented,2);
 events.touchstart({cancelable:false,preventDefault:()=>{throw Error('Uncancelable touch');}});
