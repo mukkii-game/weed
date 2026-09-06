@@ -196,7 +196,7 @@ if(mode==='play'){
   else links.forEach(k=>{k.power=Math.max(0,k.power-dt*.6);k.cool=Math.max(0,k.cool-dt);k.bodyCool=Math.max(0,k.bodyCool-dt);});
   if(mode==='play'&&elapsed>=ROUND_SECONDS)beginCaught();music();
 }else if(mode==='escaping'){escapeTime+=dt;if(escapeTime>=ESCAPE_SECONDS)finish(true);}
-else if(mode==='caught'){caught+=dt;const tx=W*.60,ty=H*.36;remaining().forEach((c,i)=>{c.eat=clamp((caught-i*.10)/1.15,0,1.2);const pull=dt*(.35+caught*1.7+c.eat*3.5);c.x+=((tx+(i-2)*5)-c.x)*pull;c.y+=(ty-c.y)*pull;c.yaw+=dt*(5+caught*8+c.eat*15);c.pop=.18+Math.sin(clock*18)*.08;});shake=Math.max(shake,caught*4);if(caught>1.6)finish(false);}}
+else if(mode==='caught'){caught+=dt;const mp=clamp((elapsed-3)/(ROUND_SECONDS-3),0,1),mx=mix(W*.76,W*.5,mp),my=mix(H*.17,H*.35,mp),baseR=mix(14,Math.min(W*.43,H*.33),mp*mp),lung=clamp(caught/1.2,0,1),mouthR=mix(baseR,Math.hypot(W,H)*.85,lung*lung),tx=mx,ty=my+mouthR*.33;remaining().forEach((c,i)=>{c.eat=clamp((caught-i*.10)/1.15,0,1.2);const pull=dt*(.35+caught*1.7+c.eat*3.5);c.x+=((tx+(i-2)*5)-c.x)*pull;c.y+=(ty-c.y)*pull;c.yaw+=dt*(5+caught*8+c.eat*15);c.pop=.18+Math.sin(clock*18)*.08;});shake=Math.max(shake,caught*4);if(caught>1.6)finish(false);}}
 
 // Continuous faces avoid antialiasing seams between hundreds of tiny quads.
 function ribbonGeometry(c){
