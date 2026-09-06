@@ -11,3 +11,12 @@ run('start()');let taps=0;while(run("mode==='play'")&&taps<190){const ids=run('r
 run('start();chars.slice(0,4).forEach(release)');let solo=0;while(run("mode==='play' && !chars[4].free")&&solo<20){tap(4);solo++;step(.35);}assert.equal(run('chars[4].free'),true);assert.ok(solo<=4);console.log('PASS solo finish',solo,'taps');
 run('start()');let p=run('({x:chars[0].x,y:chars[0].y})');events.pointerdown({pointerId:2,clientX:p.x,clientY:p.y});for(let j=1;j<=15;j++){events.pointermove({pointerId:2,clientX:p.x+j*15,clientY:p.y+j*4});step(.035);}events.pointerup({pointerId:2,clientX:p.x+225,clientY:p.y+60});step(.8);assert.ok(run('stats.tangles')>0);assert.ok(run('stats.bonks')>0);console.log('PASS rope rubbing and body bonks',JSON.stringify(run('stats')));
 run('start()');p=run('({x:chars[2].x,y:chars[2].y})');events.pointerdown({pointerId:3,clientX:p.x,clientY:p.y});events.pointercancel({pointerId:3});assert.equal(run('pointer'),null);assert.equal(run('stats.taps'),0);run('draw()');console.log('PASS cancel and render');
+run('start();chars[0].charge=100;chars[0].hold=3;chars[0].cool=3');
+step(2.8);assert.equal(run('chars[0].charge'),100);
+step(1.2);assert.ok(run('chars[0].charge>90 && chars[0].charge<100'));
+assert.equal(run('chars[0].hp'),128);console.log('PASS full twist holds, then unwinds without idle damage');
+run('start();chars[0].x=220;chars[1].x=100;chars[0].vx=200;chars[1].vx=-100;chars[0].active=1;interact(.016)');
+assert.ok(run('stats.tangles')>0);
+assert.ok(run('chars.every(c=>{const p=ropePath(c);return p.every((v,i)=>Number.isFinite(v.x+v.y+v.z)&&(!i||v.y>p[i-1].y));})'));
+assert.ok(run('chars.every(c=>ribbonGeometry(c).every(p=>Object.values(p).every(Number.isFinite)))'));
+run('pointer={c:chars[0]};draw()');console.log('PASS overlapping ribbons stay finite and do not fold backwards');
