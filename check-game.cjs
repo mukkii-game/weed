@@ -1,22 +1,26 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-const events={},nodes={};const noop=()=>{};
+const events={},nodes={},plays=[];const noop=()=>{};
 const context=new Proxy({createLinearGradient:()=>({addColorStop:noop})},{get:(o,k)=>o[k]||noop,set:(o,k,v)=>(o[k]=v,true)});
 function element(id){return nodes[id]??={textContent:'',style:{},classList:{add:noop,remove:noop},setAttribute:noop,getContext:()=>context,addEventListener:(k,fn)=>events[k]=fn,setPointerCapture:noop,hasPointerCapture:()=>false};}
-const env={console,Math,innerWidth:390,innerHeight:780,devicePixelRatio:1,document:{querySelector:element,addEventListener:noop,createElement:()=>element('offscreen')},window:{},Audio:class{pause(){}play(){return Promise.resolve()}},Image:class{},navigator:{},performance:{now:()=>0},requestAnimationFrame:noop,addEventListener:noop,localStorage:{getItem:()=>null,setItem:noop},location:{href:'https://example.test'}};
-const c=vm.createContext(env);vm.runInContext(fs.readFileSync('game.js','utf8'),c);
-const run=s=>vm.runInContext(s,c);function step(seconds){for(let i=0;i<Math.ceil(seconds*60);i++)run('update(1/60)');}
+class AudioMock{constructor(src){this.src=src;this.paused=true;this.ended=false;}pause(){this.paused=true;}play(){this.paused=false;plays.push(this.src);return Promise.resolve();}}
+const env={console,Math,innerWidth:390,innerHeight:780,devicePixelRatio:1,document:{querySelector:element,addEventListener:noop,createElement:()=>element('offscreen')},window:{},Audio:AudioMock,Image:class{},navigator:{},performance:{now:()=>run('clock')*1000},requestAnimationFrame:noop,addEventListener:noop,localStorage:{getItem:()=>null,setItem:noop},location:{href:'https://example.test'}};
+const c=vm.createContext(env);const run=s=>vm.runInContext(s,c);run(fs.readFileSync('game.js','utf8'));
+function step(seconds){for(let i=0;i<Math.ceil(seconds*60);i++){run('update(1/60)');const free=run('chars.filter(c=>c.free).length');assert.ok(free===0||free===5,'No individual escapes');assert.ok(run('chars.every(c=>c.hp===teamHp)'),'All ribbons share damage');}}
 function tap(id){const p=run(`({x:chars[${id}].x,y:chars[${id}].y})`);events.pointerdown({pointerId:1,clientX:p.x,clientY:p.y});events.pointerup({pointerId:1,clientX:p.x,clientY:p.y});}
-run('start()');step(62);assert.equal(run('mode'),'result');assert.equal(run('endWin'),false);assert.equal(run('chars.every(c=>c.hp===c.maxHp)'),true);console.log('PASS idle: no wear, bite animation, then loss');
-run('start()');let taps=0;while(run("mode==='play'")&&taps<190){const ids=run('remaining().map(c=>c.id)');tap(ids[taps%ids.length]);taps++;step(.28);}assert.equal(run('endWin'),true);console.log('PASS casual taps',JSON.stringify(run('({elapsed,stats})')),'inputs',taps);
-run('start();chars.slice(0,4).forEach(release)');let solo=0;while(run("mode==='play' && !chars[4].free")&&solo<20){tap(4);solo++;step(.35);}assert.equal(run('chars[4].free'),true);assert.ok(solo<=4);console.log('PASS solo finish',solo,'taps');
-run('start()');let p=run('({x:chars[0].x,y:chars[0].y})');events.pointerdown({pointerId:2,clientX:p.x,clientY:p.y});for(let j=1;j<=15;j++){events.pointermove({pointerId:2,clientX:p.x+j*15,clientY:p.y+j*4});step(.035);}events.pointerup({pointerId:2,clientX:p.x+225,clientY:p.y+60});step(.8);assert.ok(run('stats.tangles')>0);assert.ok(run('stats.bonks')>0);console.log('PASS rope rubbing and body bonks',JSON.stringify(run('stats')));
-run('start()');p=run('({x:chars[2].x,y:chars[2].y})');events.pointerdown({pointerId:3,clientX:p.x,clientY:p.y});events.pointercancel({pointerId:3});assert.equal(run('pointer'),null);assert.equal(run('stats.taps'),0);run('draw()');console.log('PASS cancel and render');
-run('start();chars[0].charge=100;chars[0].hold=3;chars[0].cool=3');
-step(2.8);assert.equal(run('chars[0].charge'),100);
-step(1.2);assert.ok(run('chars[0].charge>90 && chars[0].charge<100'));
-assert.equal(run('chars[0].hp'),128);console.log('PASS full twist holds, then unwinds without idle damage');
-run('start();chars[0].x=220;chars[1].x=100;chars[0].vx=200;chars[1].vx=-100;chars[0].active=1;interact(.016)');
-assert.ok(run('stats.tangles')>0);
-assert.ok(run('chars.every(c=>{const p=ropePath(c);return p.every((v,i)=>Number.isFinite(v.x+v.y+v.z)&&(!i||v.y>p[i-1].y));})'));
-assert.ok(run('chars.every(c=>ribbonGeometry(c).every(p=>Object.values(p).every(Number.isFinite)))'));
-run('pointer={c:chars[0]};draw()');console.log('PASS overlapping ribbons stay finite and do not fold backwards');
+function drag(id,tx,ty,seconds=.45){const p=run(`({x:chars[${id}].x,y:chars[${id}].y})`);events.pointerdown({pointerId:2,clientX:p.x,clientY:p.y});const n=Math.ceil(seconds*60);for(let i=1;i<=n;i++){events.pointermove({pointerId:2,clientX:p.x+(tx-p.x)*i/n,clientY:p.y+(ty-p.y)*i/n});step(1/60);}events.pointerup({pointerId:2,clientX:tx,clientY:ty});step(.25);}
+run('start()');step(29.9);assert.equal(run('mode'),'play');step(.15);assert.equal(run('mode'),'caught');assert.equal(run('elapsed'),30);step(1.7);assert.equal(run('mode'),'result');assert.equal(run('endWin'),false);assert.equal(run('teamHp'),run('TEAM_HP'));console.log('PASS 30 second timeout, capture, no idle damage');
+for(const many of [false,true]){run('start()');for(let i=0;i<300;i++){tap(many?i%5:2);step(.1);}step(2);assert.equal(run('endWin'),false);assert.equal(run('teamHp'),run('TEAM_HP'));assert.equal(run('chars.some(c=>c.free)'),false);}console.log('PASS one-person and whole-team tap spam cannot win');
+function collision(dosed){run('start();lastDrag=lastInput=clock;chars[0].x=220;chars[1].x=100;chars[0].vx=200;chars[1].vx=-100;chars[0].active=1');for(const i of dosed)run(`chars[${i}].charge=100;chars[${i}].twist=100/12`);run('interact(.016)');return run('TEAM_HP-teamHp');}
+const bare=collision([]),single=collision([0]),pair=collision([0,1]),team=collision([0,1,2,3,4]);assert.ok(bare<single&&single<pair&&pair<team);console.log('PASS contact damage improves with twists:',{bare,single,pair,team});
+run('start();chars[0].charge=100;chars[0].hold=3;chars[0].cool=3');step(2.8);assert.equal(run('chars[0].charge'),100);step(1.2);assert.ok(run('chars[0].charge>90&&chars[0].charge<100'));assert.equal(run('teamHp'),run('TEAM_HP'));console.log('PASS twist hold and slow unwind');
+run('start()');let rounds=0;
+while(run("mode==='play'")){
+ for(let i=0;i<5&&run("mode==='play'");i++)for(let t=0;t<3;t++){tap(i);step(.22);}
+ for(let i=0;i<5&&run("mode==='play'");i++){const target=run(`({x:chars[${4-i}].home,y:chars[${4-i}].homeY})`);drag(i,target.x+(i<2?35:-35),target.y,.7);step(.15);}
+ rounds++;
+}
+assert.equal(run('mode'),'escaping');assert.ok(run('elapsed<30'));assert.equal(run('chars.every(c=>c.free)'),true);const cleared=run('elapsed'),starts=run('chars.map(c=>c.y)');const fanfares=plays.filter(s=>s.endsWith('/yahhoo.mp3')).length;assert.ok(fanfares>0);step(1);assert.equal(run('mode'),'escaping');assert.ok(run('chars.every(c=>c.y<0||c.vy<0)'));assert.equal(run('elapsed'),cleared);step(1.5);assert.equal(run('mode'),'result');assert.equal(run('endWin'),true);assert.equal(plays.filter(s=>s.endsWith('/yahhoo.mp3')).length,fanfares);console.log('PASS charge-and-cross clear:',{seconds:cleared,rounds},'all swim together, one fanfare');
+run('start();lastDrag=lastInput=clock;chars[0].x=220;chars[1].x=100;chars[0].vx=200;chars[1].vx=-100;chars[0].active=1;interact(.016)');step(2);const after=run('teamHp');step(4);assert.equal(run('teamHp'),after);console.log('PASS lingering tangles stop damaging without drag');
+run('start()');const p=run('({x:chars[2].x,y:chars[2].y})');events.pointerdown({pointerId:3,clientX:p.x,clientY:p.y});events.pointercancel({pointerId:3});assert.equal(run('pointer'),null);assert.equal(run('stats.taps'),0);run('draw()');
+assert.ok(run('chars.every(c=>ribbonGeometry(c).every(p=>Object.values(p).every(Number.isFinite)))'));console.log('PASS cancel and render');
+run('start()');const startPlay=plays.length;for(let i=0;i<3;i++){run("stopSE();se('tap')");step(.2);}assert.deepEqual(plays.slice(startPlay),['assets/se/underwater-1.mp3','assets/se/underwater-2.mp3','assets/se/underwater-3.mp3']);run('soundOn=false');const muted=plays.length;run("se('win');se('tap')");assert.equal(plays.length,muted);run('soundOn=true');console.log('PASS uploaded underwater clips cycle and mute applies to fanfare');

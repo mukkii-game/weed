@@ -52,3 +52,6 @@ button { font: 900 17px system-ui; background: #ffe4a0; box-shadow: 0 5px #bb956
 #result-panel button { margin-top: 15px; }
 #result-panel #share-button { margin-top: 12px; padding: 8px 15px; font-size: 12px; color: #d9ffee; background: transparent; border: 1px solid #c3eddb55; box-shadow: none; }
 @media (max-height: 620px) { .panel .subtitle { display: none; } h1 { font-size: 39px; } #start-panel { padding-top: 15px; padding-bottom: 12px; } .title-bottom p { margin: 3px; font-size: 11px; } #result-panel { padding: 15px; } #result-panel h2 { font-size: 38px; } }
+
+.damage-track { display: block; width: 104px; height: 4px; margin-top: 5px; border-radius: 4px; background: #07354baa; overflow: hidden; }
+#damage-fill { display: block; width: 100%; height: 100%; background: #ceefae; transform: scaleX(0); transform-origin: left; transition: transform .12s ease-out; }

@@ -2,8 +2,15 @@
 
 BGM: 魔王魂 — user-supplied maou_bgm_orchestra24.mp3, encoded at 112 kbps for browser playback.
 
-SE: 効果音ラボ — ボヨン (boyon1.mp3).
-Source: https://soundeffect-lab.info/sound/anime/
+Active SE (user supplied on 2026-09-06; original MP3 bytes preserved):
+- assets/se/underwater-1.mp3 — 水中で息を吐く1.mp3
+- assets/se/underwater-2.mp3 — 水中で息を吐く2.mp3
+- assets/se/underwater-3.mp3 — 水中で息を吐く3.mp3
+- assets/se/yahhoo.mp3 — 男衆「イヤッホー！」.mp3
+
+The three underwater clips cycle across gameplay events. The cheer plays once at simultaneous release, as the clear fanfare. The existing on-screen SE credit remains 効果音ラボ; supplied files are the source of this replacement, no new download or licensing review was performed.
+
+Previously used assets/lab/boyon.mp3 is retained but no longer referenced by gameplay.
+Previous source: https://soundeffect-lab.info/sound/anime/
 Terms: https://soundeffect-lab.info/agreement/
-Embedded for game playback, not offered as a standalone sound pack. No hotlinking.
-Other requested effects could not be downloaded in this session; this build uses this effect provisionally.
+Embedded for game playback; no hotlinking or standalone sound-pack distribution.
