@@ -2,7 +2,7 @@
 // Input supplies the energy. Recoil spends it; unattended ropes never lose health.
 const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d'),$=s=>document.querySelector(s);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),mix=(a,b,t)=>a+(b-a)*t,TAU=Math.PI*2;
-const ROUND_SECONDS=30,TEAM_HP=1183,ESCAPE_SECONDS=2,DISSIPATE_SECONDS=1.5;
+const ROUND_SECONDS=30,TEAM_HP=910,ESCAPE_SECONDS=2,DISSIPATE_SECONDS=1.5;
 const palette=['#ffe44f','#79c9ee','#f3df9a','#8edbe9','#f6b8c9'];
 const sprite=new Image(),tints=[];
 function makeTint(color,id){
