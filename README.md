@@ -30,6 +30,8 @@ BGMは魔王魂の提供音源。通常SEは添付の「水中で息を吐く1�
 
 HTML/CSS/JavaScript、Canvas 2D。GitHub Pagesで公開。キャラ差し替え用に `assets/sea-friend-sprites-template.png`（900×300、正面／横／背面の3コマ）を用意。ゲーム本体はこの絵を色替えした7方向スプライト（正面・斜め4方向・横・背面）を使用している。
 
+ビルド: `npm ci && npm run build`（成果物は `dist/`、`dist/index.html` が入口。参照はサブパス対応の相対パス）。
+
 `node --check game.js`、`node check-game.cjs`、`git diff --check`。
 テスト対象は30秒の時間切れ、タップ連打の無効性、ねじれによる接触ダメージ差、ねじり保持、全員同時脱出、2秒の霧散演出、時間停止、ファンファーレの一回再生、放置、入力キャンセル、音源の切替と消音。
 モックテストと縦画面Canvas描画は、実機の操作感・音の聴感・性能を保証しない。
