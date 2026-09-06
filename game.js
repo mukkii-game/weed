@@ -258,7 +258,7 @@ function sea(){const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#248a
 function mermaid(front=false){
  const threat=mode==='caught'||mode==='escaping'||(mode==='result'&&!endWin)||(mode==='result'&&endWin);
  if((mode!=='play'&&!threat)||elapsed<3||front!==threat)return;
- const p=clamp((elapsed-3)/(ROUND_SECONDS-3),0,1),lunge=mode==='escaping'?0:(mode==='result'&&endWin)?clamp(escapeTime/1.2,0,1):clamp(caught/1.2,0,1);
+ const p=clamp((elapsed-3)/(ROUND_SECONDS-3),0,1),lunge=mode==='caught'||(mode==='result'&&!endWin)?clamp(caught/1.2,0,1):0;
  const x=mix(W*.76,W*.5,p),y=mix(H*.17,H*.35,p),radius=mix(14,Math.min(W*.43,H*.33),p*p);
  const r=mix(radius,Math.hypot(W,H)*.85,lunge*lunge);
  ctx.save();ctx.translate(x,y);ctx.globalAlpha=.15+.85*p;ctx.fillStyle='#020e16';
