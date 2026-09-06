@@ -65,3 +65,4 @@ button { font: 900 17px system-ui; background: #ffe4a0; box-shadow: 0 5px #bb956
 
 .damage-track { display: block; width: 150px; height: 12px; margin-top: 5px; border: 1px solid #d5ffe055; border-radius: 8px; background: #55d478; overflow: hidden; box-shadow: inset 0 1px 4px #001b; }
 #damage-fill { display: block; width: 100%; height: 100%; background: linear-gradient(90deg,#63e27d 0%,#dce466 48%,#f06a55 78%,#c83e50 100%); transform: scaleX(0); transform-origin: left; transition: transform .12s ease-out; }
+#hud #countdown strong { font-size: clamp(56px, 17vw, 92px); }
