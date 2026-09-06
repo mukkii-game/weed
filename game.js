@@ -28,7 +28,7 @@ function unlockAudio(){if(!audio){const A=window.AudioContext||window.webkitAudi
 function tone(f,t=.12,vol=.06,type='sine',delay=0,end=f){if(!soundOn||!audio||hidden||audio.state!=='running')return;const now=audio.currentTime+delay,o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.setValueAtTime(f,now);o.frequency.exponentialRampToValueAtTime(Math.max(30,end),now+t);g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(vol,now+.009);g.gain.exponentialRampToValueAtTime(.0001,now+t);o.connect(g);g.connect(audio.destination);o.start(now);o.stop(now+t+.025);}
 const waterFiles=['underwater-1','underwater-2','underwater-3'];
 const cheerVoices=Array.from({length:5},()=>{const a=new Audio('assets/se/yahhoo.mp3');a.preload='auto';return a;});
-const tighteningSE=Array.from({length:3},()=>{const a=new Audio('assets/se/tightening-1.mp3');a.preload='auto';return a;});
+const tighteningSE=Array.from({length:5},()=>{const a=new Audio('assets/se/tightening-1.mp3');a.preload='auto';return a;});
 const knifeSE=['assets/se/knife-2.mp3','assets/se/knife-3.mp3'].map(src=>{const a=new Audio(src);a.preload='auto';return a;});
 const startMaleSE=new Audio('assets/se/male-oh.mp3');startMaleSE.preload='auto';
 const startCheerSE=new Audio('assets/se/cheer.mp3');startCheerSE.preload='auto';
