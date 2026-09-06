@@ -24,3 +24,9 @@ run('start();lastDrag=lastInput=clock;chars[0].x=220;chars[1].x=100;chars[0].vx=
 run('start()');const p=run('({x:chars[2].x,y:chars[2].y})');events.pointerdown({pointerId:3,clientX:p.x,clientY:p.y});events.pointercancel({pointerId:3});assert.equal(run('pointer'),null);assert.equal(run('stats.taps'),0);run('draw()');
 assert.ok(run('chars.every(c=>ribbonGeometry(c).every(p=>Object.values(p).every(Number.isFinite)))'));console.log('PASS cancel and render');
 run('start()');const startPlay=plays.length;for(let i=0;i<3;i++){run("stopSE();se('tap')");step(.2);}assert.deepEqual(plays.slice(startPlay),['assets/se/underwater-1.mp3','assets/se/underwater-2.mp3','assets/se/underwater-3.mp3']);run('soundOn=false');const muted=plays.length;run("se('win');se('tap')");assert.equal(plays.length,muted);run('soundOn=true');console.log('PASS uploaded underwater clips cycle and mute applies to fanfare');
+let prevented=0;const touch={cancelable:true,preventDefault:()=>prevented++};
+run('start()');events.touchstart(touch);events.touchmove(touch);assert.equal(prevented,2);
+events.touchstart({cancelable:false,preventDefault:()=>{throw Error('Uncancelable touch');}});
+run("mode='result'");events.touchstart(touch);assert.equal(prevented,2);
+run("mode='title'");events.touchmove(touch);assert.equal(prevented,2);
+run('start()');tap(0);assert.equal(run('stats.taps'),1);console.log('PASS touch gesture guard is limited to gameplay; pointer input remains active');

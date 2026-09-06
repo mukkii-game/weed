@@ -1,0 +1,10 @@
+{
+  "name": "コンブゲーム",
+  "short_name": "コンブゲーム",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#061d26",
+  "theme_color": "#061d26"
+}
