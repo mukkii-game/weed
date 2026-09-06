@@ -7,7 +7,7 @@ const palette=['#edb4ca','#f2d790','#b8dfe9','#eed4bc','#b8dba9'];
 const sprite=new Image(),tints=[];
 sprite.onload=()=>palette.forEach(color=>{const c=document.createElement('canvas');c.width=sprite.width;c.height=sprite.height;const x=c.getContext('2d');x.drawImage(sprite,0,0);x.globalCompositeOperation='source-atop';x.globalAlpha=.22;x.fillStyle=color;x.fillRect(0,0,c.width,c.height);tints.push(c);});
 const SPRITE_FRAMES=7;
-sprite.src='assets/sea-friend-sprites.png?v=2';
+sprite.src='assets/sea-friend-sprites.png?v=3';
 
 let teamHp=TEAM_HP,damagePulse=0,escapeTime=0,lastDrag=-10;
 let W=390,H=780,mode='title',chars=[],links=[],particles=[],words=[],impacts=[],pointer=null,pointers=[];
